@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>读书乐园 📚</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+  background: #fdf6e3;
+  color: #1a0a00;
+  min-height: 100vh;
+}
+
+/* ── LOGIN ── */
+#login-screen {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 30px 20px;
+  background: linear-gradient(135deg, #fdf6e3, #f5ead0);
+}
+.login-title {
+  font-size: clamp(40px, 12vw, 72px);
+  color: #c0392b;
+  text-shadow: 3px 3px 0 rgba(201,150,42,0.25);
+  letter-spacing: 8px;
+  margin-bottom: 6px;
+}
+.login-sub { color: #8b6f5e; font-size: 13px; letter-spacing: 3px; margin-bottom: 48px; }
+
+.new-article-banner {
+  background: rgba(192,57,43,0.08);
+  border: 1px dashed #c0392b;
+  border-radius: 12px;
+  padding: 10px 20px;
+  margin-bottom: 30px;
+  font-size: 13px; color: #c0392b; text-align: center;
+}
+.new-article-banner span { font-size: 11px; color: #8b6f5e; }
+
+.profile-cards { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
+
+.profile-card {
+  background: white; border-radius: 24px;
+  padding: 28px 24px; width: 185px; text-align: center;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(44,24,16,0.12);
+  border: 2px solid transparent;
+  transition: all .25s;
+  position: relative;
+}
+.profile-card:hover { transform: translateY(-7px); box-shadow: 0 14px 36px rgba(44,24,16,0.18); }
+.profile-card.kongkong:hover, .profile-card.kongkong.has-new { border-color: #c0392b; }
+.profile-card.miaomiao:hover, .profile-card.miaomiao.has-new { border-color: #1a7a6e; }
+.new-badge {
+  position: absolute; top: -10px; right: -10px;
+  background: #c0392b; color: white; border-radius: 999px;
+  width: 24px; height: 24px; font-size: 12px; font-weight: bold;
+  display: flex; align-items: center; justify-content: center;
+}
+.profile-avatar { font-size: 52px; margin-bottom: 10px; }
+.profile-name { font-size: 21px; font-weight: 700; color: #1a0a00; margin-bottom: 3px; }
+.profile-grade { font-size: 12px; color: #8b6f5e; margin-bottom: 12px; }
+.profile-stats { border-top: 1px dashed #f5ead0; padding-top: 10px; font-size: 12px; color: #8b6f5e; }
+
+/* ── APP ── */
+#app { display: none; flex-direction: column; min-height: 100vh; }
+#app.show { display: flex; }
+
+.app-header {
+  background: white; border-bottom: 2px solid #f5ead0;
+  padding: 12px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 40;
+  box-shadow: 0 2px 10px rgba(44,24,16,0.1);
+}
+.header-left { display: flex; align-items: center; gap: 10px; }
+.header-avatar { font-size: 26px; }
+.header-name { font-weight: 700; font-size: 16px; }
+.header-grade { font-size: 11px; color: #8b6f5e; }
+.header-right { display: flex; align-items: center; gap: 8px; }
+.streak-badge { background: #fff8e1; border: 1px solid #f0c040; border-radius: 20px; padding: 3px 10px; font-size: 12px; color: #7d5a00; }
+.btn-small { background: none; border: 1px solid #f5ead0; border-radius: 8px; padding: 5px 10px; font-size: 12px; color: #8b6f5e; cursor: pointer; }
+.btn-small:hover { background: #f5ead0; }
+
+.nav-tabs { display: flex; gap: 4px; padding: 10px 16px; border-bottom: 1px solid #f5ead0; }
+.nav-tab { padding: 7px 16px; border-radius: 20px; font-size: 13px; border: none; cursor: pointer; background: transparent; color: #8b6f5e; transition: all .2s; }
+.nav-tab.active { background: #1a0a00; color: white; }
+
+.main { max-width: 760px; width: 100%; margin: 0 auto; padding: 20px 16px; }
+
+/* ── ARTICLE ── */
+.controls-card { background: white; border-radius: 16px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(44,24,16,0.08); }
+.controls-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.ctrl-label { font-size: 10px; color: #8b6f5e; letter-spacing: 1px; margin-bottom: 4px; text-transform: uppercase; }
+.ctrl-select { width: 100%; padding: 8px 10px; border: 1.5px solid #f5ead0; border-radius: 10px; font-size: 13px; background: #fdf6e3; color: #1a0a00; }
+.ctrl-input { width: 100%; padding: 8px 10px; border: 1.5px solid #f5ead0; border-radius: 10px; font-size: 13px; background: #fdf6e3; color: #1a0a00; }
+
+.article-card { background: white; border-radius: 16px; padding: 24px 22px; box-shadow: 0 2px 12px rgba(44,24,16,0.08); }
+.article-title { text-align: center; font-size: 24px; color: #c0392b; letter-spacing: 4px; margin-bottom: 18px; }
+.article-body { font-size: 20px; line-height: 2.4; color: #1a0a00; letter-spacing: 0.5px; }
+.article-legend { margin-top: 14px; padding-top: 12px; border-top: 1px dashed #f5ead0; font-size: 11px; color: #b0977a; display: flex; gap: 12px; flex-wrap: wrap; }
+
+.zh { display: inline-block; cursor: pointer; border-radius: 3px; padding: 0 1px; transition: background .1s; }
+.zh:hover { background: rgba(201,150,42,0.15); }
+.zh.unknown { border-bottom: 2px dotted #c0392b; color: #c0392b; }
+
+.btn-done { width: 100%; margin-top: 12px; padding: 11px; background: #1a7a6e; color: white; border: none; border-radius: 12px; font-size: 14px; cursor: pointer; letter-spacing: 1px; }
+.btn-done:hover { background: #156057; }
+.done-msg { text-align: center; padding: 10px; font-size: 13px; color: #1a7a6e; margin-top: 8px; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: #8b6f5e; }
+.empty-state .icon { font-size: 48px; margin-bottom: 14px; }
+.empty-state p { font-size: 16px; letter-spacing: 1px; margin-bottom: 8px; }
+.empty-state .hint { font-size: 13px; color: #b0977a; line-height: 1.8; }
+.hint-code { background: #f5ead0; padding: 2px 8px; border-radius: 6px; font-family: monospace; font-size: 12px; }
+
+/* ── TOOLTIP ── */
+.tooltip {
+  position: fixed; z-index: 999;
+  background: #2c1810; color: #fdf6e3;
+  padding: 14px 16px; border-radius: 14px; min-width: 155px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+  pointer-events: all;
+}
+.tt-pinyin { font-size: 13px; color: #f0c040; margin-bottom: 2px; text-align: center; }
+.tt-char { font-size: 30px; font-weight: bold; text-align: center; margin-bottom: 2px; }
+.tt-status { font-size: 11px; color: #9a7060; text-align: center; margin-bottom: 10px; }
+.tt-btns { display: flex; gap: 6px; }
+.tt-btn { flex: 1; padding: 7px 4px; border: none; border-radius: 8px; font-size: 12px; cursor: pointer; }
+.tt-know { background: #27ae60; color: white; }
+.tt-unknown { background: #c0392b; color: white; }
+
+/* ── VOCAB ── */
+.vocab-section { margin-bottom: 26px; }
+.vocab-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.vocab-section-title { font-size: 16px; font-weight: 700; color: #1a0a00; letter-spacing: 1px; }
+.vocab-count { font-size: 12px; color: #8b6f5e; background: #f5ead0; padding: 2px 10px; border-radius: 10px; }
+.vocab-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; }
+.vocab-card { border-radius: 12px; padding: 12px 6px; text-align: center; cursor: pointer; transition: transform .15s; }
+.vocab-card:hover { transform: scale(1.06); }
+.vocab-card.unknown { background: linear-gradient(135deg, #fde8e8, #f5b7b1); }
+.vocab-card.mastered { background: linear-gradient(135deg, #d5f4e6, #a8e6cf); }
+.vocab-char { font-size: 26px; margin-bottom: 2px; }
+.vocab-pinyin { font-size: 11px; color: #555; }
+.vocab-tip { font-size: 11px; color: #b0977a; text-align: center; margin-top: 8px; }
+.vocab-empty { font-size: 13px; color: #b0977a; padding: 6px 0; }
+
+/* ── PROGRESS ── */
+.stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+.stat-card { background: white; border-radius: 16px; padding: 18px 16px; text-align: center; box-shadow: 0 2px 10px rgba(44,24,16,0.08); }
+.stat-num { font-size: 38px; line-height: 1; margin-bottom: 4px; }
+.stat-label { font-size: 12px; color: #8b6f5e; }
+.progress-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(44,24,16,0.08); }
+.progress-title { font-size: 14px; font-weight: 600; color: #1a0a00; margin-bottom: 12px; }
+.prog-track { background: #f5ead0; border-radius: 999px; height: 13px; overflow: hidden; margin-bottom: 6px; }
+.prog-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #c0392b, #c9962a); transition: width 1s; }
+.prog-labels { display: flex; justify-content: space-between; font-size: 12px; color: #8b6f5e; }
+.history-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 10px rgba(44,24,16,0.08); }
+.history-title { font-size: 15px; font-weight: 700; color: #1a0a00; margin-bottom: 12px; }
+.history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #f5ead0; }
+.history-item:last-child { border-bottom: none; }
+.history-name { font-size: 14px; color: #1a0a00; }
+.history-chars { font-size: 11px; color: #1a7a6e; }
+.history-date { font-size: 12px; color: #8b6f5e; }
+
+/* ── SAVING INDICATOR ── */
+.saving { position: fixed; bottom: 20px; right: 20px; background: #1a7a6e; color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; z-index: 100; opacity: 0; transition: opacity .3s; }
+.saving.show { opacity: 1; }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+.fade-up { animation: fadeUp .35s ease; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-title">读书乐园</div>
+  <div class="login-sub">选择你的账户，开始阅读 ✨</div>
+  <div id="new-article-banner" style="display:none" class="new-article-banner">
+    📖 新文章已准备好：《<span id="banner-title"></span>》<br>
+    <span>给 <span id="banner-user"></span> 的</span>
+  </div>
+  <div class="profile-cards">
+    <div class="profile-card kongkong" id="card-kongkong" onclick="login('kongkong')">
+      <div class="profile-avatar">🌸</div>
+      <div class="profile-name">空空</div>
+      <div class="profile-grade">马立平 · 四年级</div>
+      <div class="profile-stats" id="stats-kongkong">读取中…</div>
+    </div>
+    <div class="profile-card miaomiao" id="card-miaomiao" onclick="login('miaomiao')">
+      <div class="profile-avatar">🌟</div>
+      <div class="profile-name">妙妙</div>
+      <div class="profile-grade">马立平 · 一年级</div>
+      <div class="profile-stats" id="stats-miaomiao">读取中…</div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="app-header">
+    <div class="header-left">
+      <span class="header-avatar" id="h-avatar"></span>
+      <div>
+        <div class="header-name" id="h-name"></div>
+        <div class="header-grade" id="h-grade"></div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="streak-badge">🔥 <span id="h-streak">0</span> 天</span>
+      <button class="btn-small" onclick="logout()">退出</button>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-tab="read" onclick="switchTab('read')">📖 阅读</button>
+    <button class="nav-tab" data-tab="vocab" onclick="switchTab('vocab')">📝 生字本</button>
+    <button class="nav-tab" data-tab="progress" onclick="switchTab('progress')">🌟 进步</button>
+  </div>
+  <div class="main">
+    <!-- READ -->
+    <div id="tab-read">
+      <div id="article-area"></div>
+    </div>
+    <!-- VOCAB -->
+    <div id="tab-vocab" style="display:none">
+      <div class="vocab-section">
+        <div class="vocab-section-header">
+          <div class="vocab-section-title">🔴 需要加强</div>
+          <div class="vocab-count" id="cnt-unknown">0 个字</div>
+        </div>
+        <div class="vocab-grid" id="grid-unknown"></div>
+      </div>
+      <div class="vocab-section">
+        <div class="vocab-section-header">
+          <div class="vocab-section-title">🟢 已掌握</div>
+          <div class="vocab-count" id="cnt-mastered">0 个字</div>
+        </div>
+        <div class="vocab-grid" id="grid-mastered"></div>
+      </div>
+      <div class="vocab-tip">💡 点击字卡可以切换认识 / 不认识</div>
+    </div>
+    <!-- PROGRESS -->
+    <div id="tab-progress" style="display:none">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-num" id="s-mastered" style="color:#c0392b">0</div><div class="stat-label">认识的字</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-articles" style="color:#1a7a6e">0</div><div class="stat-label">读过的文章</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-streak" style="color:#c9962a">0</div><div class="stat-label">连续天数</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-unknown" style="color:#8e44ad">0</div><div class="stat-label">生字待学</div></div>
+      </div>
+      <div class="progress-card">
+        <div class="progress-title" id="prog-title">词汇掌握进度</div>
+        <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+        <div class="prog-labels"><span id="prog-left">0 个已掌握</span><span id="prog-right">目标 600 字</span></div>
+      </div>
+      <div class="history-card">
+        <div class="history-title">📖 阅读记录</div>
+        <div id="history-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLTIP -->
+<div class="tooltip" id="tooltip" style="display:none">
+  <div class="tt-pinyin" id="tt-pinyin"></div>
+  <div class="tt-char" id="tt-char"></div>
+  <div class="tt-status" id="tt-status"></div>
+  <div class="tt-btns">
+    <button class="tt-btn tt-know" onclick="markChar('known')">✓ 认识</button>
+    <button class="tt-btn tt-unknown" onclick="markChar('unknown')">✗ 不认识</button>
+  </div>
+</div>
+
+<div class="saving" id="saving-indicator">已保存 ✓</div>
+
+<script>
+// ════════════════════════════════════════════
+// 文章配置 —— 只需改这里！
+// ════════════════════════════════════════════
+const ARTICLE = {
+  user: "kongkong",
+  title: "海豚的秘密",
+  body: `海豚是一种聪明又可爱的动物，它们生活在大海里，喜欢成群结队地游来游去。
+
+海豚用肺呼吸，不是用鱼鳃。它们每隔一段时间就要游到水面上，大口吸一口新鲜空气。
+
+最有趣的是，海豚会用声音说话。它们发出各种各样的叫声，告诉同伴附近有没有食物，或者有没有危险。科学家发现，每只海豚都有自己专属的叫声，就像人的名字一样。
+
+海豚还很喜欢跳跃。在大海里，它们常常高高跳出水面，又重重落下，溅起白色的浪花。看到这样的画面，谁都会忍不住微笑。`
+};
+
+// ════════════════════════════════════════════
+// 用户配置
+// ════════════════════════════════════════════
+const PROFILES = {
+  kongkong: { name:"空空", avatar:"🌸", grade:"四年级", color:"#c0392b", vocabTarget:600 },
+  miaomiao: { name:"妙妙", avatar:"🌟", grade:"一年级", color:"#1a7a6e", vocabTarget:150 }
+};
+
+// ════════════════════════════════════════════
+// 拼音字典
+// ════════════════════════════════════════════
+const PINYIN = {
+  "的":"de","了":"le","是":"shì","在":"zài","我":"wǒ","你":"nǐ","他":"tā","她":"tā","它":"tā","们":"men",
+  "有":"yǒu","不":"bù","来":"lái","去":"qù","说":"shuō","这":"zhè","那":"nà","大":"dà","小":"xiǎo",
+  "人":"rén","上":"shàng","下":"xià","中":"zhōng","里":"lǐ","以":"yǐ","与":"yǔ","都":"dōu","和":"hé",
+  "会":"huì","能":"néng","要":"yào","可":"kě","个":"gè","子":"zǐ","什":"shén","么":"me","给":"gěi",
+  "一":"yī","年":"nián","月":"yuè","日":"rì","时":"shí","分":"fēn","秒":"miǎo","今":"jīn","昨":"zuó",
+  "家":"jiā","国":"guó","学":"xué","校":"xiào","老":"lǎo","师":"shī","朋":"péng","友":"yǒu",
+  "父":"fù","母":"mǔ","水":"shuǐ","火":"huǒ","山":"shān","河":"hé","海":"hǎi","天":"tiān",
+  "地":"dì","风":"fēng","雨":"yǔ","花":"huā","草":"cǎo","树":"shù","书":"shū","读":"dú",
+  "写":"xiě","看":"kàn","听":"tīng","走":"zǒu","跑":"pǎo","飞":"fēi","春":"chūn","夏":"xià",
+  "秋":"qiū","冬":"dōng","明":"míng","心":"xīn","手":"shǒu","爱":"ài","美":"měi","好":"hǎo",
+  "真":"zhēn","故":"gù","事":"shì","字":"zì","很":"hěn","已":"yǐ","经":"jīng","也":"yě",
+  "猫":"māo","狗":"gǒu","鸟":"niǎo","鱼":"yú","爸":"bà","妈":"mā","哥":"gē","姐":"jiě",
+  "弟":"dì","妹":"mèi","红":"hóng","白":"bái","黑":"hēi","门":"mén","路":"lù","车":"chē",
+  "电":"diàn","话":"huà","想":"xiǎng","知":"zhī","道":"dào","感":"gǎn","情":"qíng",
+  "快":"kuài","慢":"màn","高":"gāo","低":"dī","多":"duō","少":"shǎo","长":"cháng","短":"duǎn",
+  "新":"xīn","难":"nán","体":"tǐ","开":"kāi","关":"guān","进":"jìn","出":"chū","前":"qián",
+  "后":"hòu","左":"zuǒ","右":"yòu","问":"wèn","答":"dá","笑":"xiào","哭":"kū","唱":"chàng",
+  "跳":"tiào","游":"yóu","吃":"chī","喝":"hē","睡":"shuì","起":"qǐ","坐":"zuò","站":"zhàn",
+  "找":"zhǎo","帮":"bāng","回":"huí","叫":"jiào","请":"qǐng","谢":"xiè","对":"duì","错":"cuò",
+  "热":"rè","冷":"lěng","暖":"nuǎn","亮":"liàng","远":"yuǎn","近":"jìn","重":"zhòng","轻":"qīng",
+  "甜":"tián","苦":"kǔ","二":"èr","三":"sān","四":"sì","五":"wǔ","六":"liù","七":"qī",
+  "八":"bā","九":"jiǔ","十":"shí","百":"bǎi","千":"qiān","万":"wàn","同":"tóng",
+  "木":"mù","土":"tǔ","金":"jīn","而":"ér","但":"dàn","因":"yīn","所":"suǒ","如":"rú",
+  "就":"jiù","为":"wèi","或":"huò","及":"jí","虽":"suī","然":"rán","果":"guǒ","只":"zhǐ",
+  "特":"tè","别":"bié","常":"cháng","非":"fēi","确":"què","实":"shí","还":"hái","又":"yòu",
+  "生":"shēng","活":"huó","工":"gōng","作":"zuò","用":"yòng","行":"xíng","自":"zì","再":"zài",
+  "意":"yì","思":"sī","种":"zhǒng","方":"fāng","面":"miàn","间":"jiān","次":"cì","每":"měi",
+  "些":"xiē","样":"yàng","比":"bǐ","像":"xiàng","更":"gèng","着":"zhe","过":"guò","把":"bǎ",
+  "被":"bèi","从":"cóng","到":"dào","向":"xiàng","诗":"shī","喜":"xǐ","乐":"lè","色":"sè",
+  "声":"shēng","梦":"mèng","理":"lǐ","法":"fǎ","力":"lì","气":"qì","太":"tài","半":"bàn",
+  "全":"quán","各":"gè","没":"méi","吗":"ma","呢":"ne","吧":"ba","啊":"a","哦":"ó","哇":"wā",
+  "玩":"wán","买":"mǎi","送":"sòng","画":"huà","告":"gào","诉":"sù","做":"zuò","动":"dòng",
+  "黄":"huáng","蓝":"lán","绿":"lǜ","紫":"zǐ","橙":"chéng","粉":"fěn","灰":"huī","银":"yín",
+  "空":"kōng","妙":"miào","云":"yún","星":"xīng","光":"guāng","夜":"yè","早":"zǎo","晚":"wǎn",
+  "午":"wǔ","雪":"xuě","冰":"bīng","石":"shí","湖":"hú","江":"jiāng","林":"lín",
+  "鸡":"jī","鸭":"yā","牛":"niú","马":"mǎ","羊":"yáng","猪":"zhū","兔":"tù","虎":"hǔ",
+  "龙":"lóng","熊":"xióng","爷":"yé","奶":"nǎi","叔":"shū","阿":"ā","姨":"yí","伯":"bó",
+  "业":"yè","题":"tí","考":"kǎo","试":"shì","成":"chéng","优":"yōu","秀":"xiù",
+  "第":"dì","定":"dìng","名":"míng","最":"zuì","欢":"huān","豆":"dòu","等":"děng","得":"de",
+  "己":"jǐ","暗":"àn","久":"jiǔ","音":"yīn","两":"liǎng","边":"biān","东":"dōng","西":"xī",
+  "主":"zhǔ","喊":"hǎn","露":"lù","眼":"yǎn","睛":"jīng","兴":"xīng","觉":"jué",
+  "忍":"rěn","住":"zhù","喵":"miāo","发":"fā","现":"xiàn","摇":"yáo","尾":"wěi","巴":"ba",
+  "点":"diǎn","捉":"zhuō","迷":"mí","藏":"cáng","悄":"qiāo","躲":"duǒ","床":"chuáng","底":"dǐ",
+  "种":"zhǒng","叶":"yè","根":"gēn","枝":"zhī","班":"bān","课":"kè","操":"cāo","球":"qiú",
+  "船":"chuán","机":"jī","舅":"jiù","姑":"gū","绩":"jì","差":"chà",
+  "海":"hǎi","豚":"tún","聪":"cōng","明":"míng","爱":"ài","群":"qún","结":"jié","队":"duì",
+  "肺":"fèi","呼":"hū","吸":"xī","隔":"gé","段":"duàn","新":"xīn","鲜":"xiān","趣":"qù",
+  "各":"gè","样":"yàng","伴":"bàn","附":"fù","近":"jìn","食":"shí","物":"wù","危":"wēi",
+  "险":"xiǎn","科":"kē","学":"xué","家":"jiā","发":"fā","现":"xiàn","专":"zhuān","属":"shǔ",
+  "跳":"tiào","跃":"yuè","常":"cháng","高":"gāo","重":"zhòng","落":"luò","溅":"jiàn","浪":"làng",
+  "微":"wēi","笑":"xiào","谁":"shuí","忍":"rěn","鳃":"sāi","口":"kǒu","色":"sè","白":"bái"
+};
+
+// ════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════
+let currentUser = null;
+let ud = {};
+let activeChar = null;
+let articleSaved = false;
+
+// ════════════════════════════════════════════
+// API
+// ════════════════════════════════════════════
+async function apiLoad(uid) {
+  try {
+    const r = await fetch(`/api/userdata?uid=${uid}`);
+    if (r.ok) return await r.json();
+  } catch(e) {}
+  return {};
+}
+
+async function apiSave(uid, data) {
+  try {
+    await fetch(`/api/userdata?uid=${uid}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    showSaving();
+  } catch(e) {}
+}
+
+function showSaving() {
+  const el = document.getElementById("saving-indicator");
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 1500);
+}
+
+function emptyUD() {
+  return { masteredChars:{}, unknownChars:{}, articleHistory:[], streak:0, lastActiveDate:null, totalArticles:0 };
+}
+
+// ════════════════════════════════════════════
+// LOGIN
+// ════════════════════════════════════════════
+async function initLogin() {
+  // Show new article banner
+  if (ARTICLE) {
+    const p = PROFILES[ARTICLE.user];
+    document.getElementById("new-article-banner").style.display = "block";
+    document.getElementById("banner-title").textContent = ARTICLE.title;
+    document.getElementById("banner-user").textContent = p?.name || "";
+    const card = document.getElementById("card-" + ARTICLE.user);
+    if (card) card.classList.add("has-new");
+    const badge = document.createElement("div");
+    badge.className = "new-badge"; badge.textContent = "新";
+    if (card && !card.querySelector(".new-badge")) card.appendChild(badge);
+  }
+  // Load stats
+  for (const uid of ["kongkong","miaomiao"]) {
+    const data = await apiLoad(uid);
+    const mastered = Object.keys(data.masteredChars||{}).length;
+    const articles = data.totalArticles||0;
+    document.getElementById("stats-"+uid).innerHTML = `✅ ${mastered} 字 · 📖 ${articles} 篇`;
+  }
+}
+
+async function login(userId) {
+  currentUser = userId;
+  ud = await apiLoad(userId);
+  if (!ud.masteredChars) ud = emptyUD();
+
+  // Streak
+  const today = new Date().toDateString();
+  if (!ud.lastActiveDate) ud.streak = 1;
+  else if (ud.lastActiveDate !== today) {
+    const yest = new Date(Date.now()-86400000).toDateString();
+    ud.streak = ud.lastActiveDate===yest ? (ud.streak||0)+1 : 1;
+  }
+  ud.lastActiveDate = today;
+  await apiSave(userId, ud);
+
+  const p = PROFILES[userId];
+  document.getElementById("h-avatar").textContent = p.avatar;
+  document.getElementById("h-name").style.color = p.color;
+  document.getElementById("h-name").textContent = p.name;
+  document.getElementById("h-grade").textContent = "马立平 · " + p.grade;
+  document.getElementById("h-streak").textContent = ud.streak||0;
+
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("app").classList.add("show");
+  articleSaved = false;
+  switchTab("read");
+}
+
+function logout() {
+  currentUser = null;
+  document.getElementById("app").classList.remove("show");
+  document.getElementById("login-screen").style.display = "flex";
+  initLogin();
+}
+
+// ════════════════════════════════════════════
+// TABS
+// ════════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+  document.querySelector(`[data-tab="${tab}"]`).classList.add("active");
+  ["read","vocab","progress"].forEach(t => {
+    document.getElementById("tab-"+t).style.display = t===tab ? "block" : "none";
+  });
+  if (tab==="vocab") renderVocab();
+  if (tab==="progress") renderProgress();
+}
+
+// ════════════════════════════════════════════
+// ARTICLE
+// ════════════════════════════════════════════
+function renderArticle() {
+  const area = document.getElementById("article-area");
+  const showArticle = ARTICLE && ARTICLE.user === currentUser;
+
+  if (!showArticle) {
+    const p = PROFILES[currentUser];
+    area.innerHTML = `
+      <div class="empty-state fade-up">
+        <div class="icon">📚</div>
+        <p>还没有新文章</p>
+        <div class="hint">让爸爸妈妈告诉Claude：<br>
+        <span class="hint-code">"给${p.name}生成一篇关于___的文章"</span></div>
+      </div>`;
+    return;
+  }
+
+  const isCN = c => /[\u4e00-\u9fff]/.test(c);
+  let bodyHTML = "";
+  for (const char of ARTICLE.body) {
+    if (!isCN(char)) {
+      bodyHTML += char==="\n" ? "<br>" : char;
+      continue;
+    }
+    const isU = !!ud.unknownChars?.[char];
+    bodyHTML += `<span class="zh${isU?" unknown":""}" onclick="charClick(this,'${char}')">${char}</span>`;
+  }
+
+  area.innerHTML = `
+    <div class="article-card fade-up">
+      <div class="article-title">${ARTICLE.title}</div>
+      <div class="article-body">${bodyHTML}</div>
+      <div class="article-legend">
+        <span>🔴 红色点线 = 不认识的字</span>
+        <span style="margin-left:auto">点击汉字看拼音</span>
+      </div>
+    </div>
+    ${!articleSaved ? `<button class="btn-done" onclick="markDone()">✓ 我读完了，保存记录</button>` : `<div class="done-msg">✅ 已保存到阅读记录！</div>`}
+  `;
+}
+
+async function markDone() {
+  if (articleSaved) return;
+  ud.totalArticles = (ud.totalArticles||0)+1;
+  ud.articleHistory = [
+    { title:ARTICLE.title, date:new Date().toLocaleDateString("zh-CN"), charCount:ARTICLE.body.length },
+    ...(ud.articleHistory||[])
+  ].slice(0,20);
+  articleSaved = true;
+  await apiSave(currentUser, ud);
+  renderArticle();
+}
+
+// ════════════════════════════════════════════
+// TOOLTIP
+// ════════════════════════════════════════════
+function charClick(el, char) {
+  activeChar = { char, el };
+  const pinyin = PINYIN[char] || "···";
+  const isU = !!ud.unknownChars?.[char];
+  document.getElementById("tt-pinyin").textContent = pinyin;
+  document.getElementById("tt-char").textContent = char;
+  document.getElementById("tt-status").textContent = isU ? "📌 不认识" : "✅ 认识";
+  const tt = document.getElementById("tooltip");
+  tt.style.display = "block";
+  const rect = el.getBoundingClientRect();
+  const top = Math.max(10, rect.top - 130);
+  const left = Math.min(window.innerWidth-165, Math.max(10, rect.left-55));
+  tt.style.top = top+"px"; tt.style.left = left+"px";
+}
+
+async function markChar(status) {
+  if (!activeChar) return;
+  const { char } = activeChar;
+  const pinyin = PINYIN[char]||"···";
+  const now = new Date().toISOString();
+  if (!ud.unknownChars) ud.unknownChars = {};
+  if (!ud.masteredChars) ud.masteredChars = {};
+  if (status==="known") {
+    ud.masteredChars[char] = { pinyin, masteredDate:now };
+    delete ud.unknownChars[char];
+    if (activeChar.el) activeChar.el.classList.remove("unknown");
+  } else {
+    ud.unknownChars[char] = { pinyin, firstSeen:ud.unknownChars[char]?.firstSeen||now, seenCount:(ud.unknownChars[char]?.seenCount||0)+1 };
+    delete ud.masteredChars[char];
+    if (activeChar.el) activeChar.el.classList.add("unknown");
+  }
+  hideTooltip();
+  await apiSave(currentUser, ud);
+  renderVocabIfActive();
+}
+
+function hideTooltip() {
+  document.getElementById("tooltip").style.display = "none";
+  activeChar = null;
+}
+
+document.addEventListener("click", e => {
+  if (!e.target.closest("#tooltip") && !e.target.classList.contains("zh")) hideTooltip();
+});
+
+// ════════════════════════════════════════════
+// VOCAB
+// ════════════════════════════════════════════
+function renderVocabIfActive() {
+  if (document.getElementById("tab-vocab").style.display !== "none") renderVocab();
+}
+
+function renderVocab() {
+  const unknown = Object.entries(ud.unknownChars||{});
+  const mastered = Object.entries(ud.masteredChars||{});
+
+  document.getElementById("cnt-unknown").textContent = unknown.length+" 个字";
+  document.getElementById("cnt-mastered").textContent = mastered.length+" 个字";
+
+  const makeGrid = (items, type) => {
+    if (!items.length) return `<div class="vocab-empty">${type==="unknown"?"太棒了，暂无生字 👍":"阅读时点击汉字标记！"}</div>`;
+    return items.map(([c,d]) => `
+      <div class="vocab-card ${type}" onclick="toggleVocabChar('${c}','${type}')">
+        <div class="vocab-char">${c}</div>
+        <div class="vocab-pinyin">${d.pinyin||PINYIN[c]||"···"}</div>
+      </div>`).join("");
+  };
+
+  document.getElementById("grid-unknown").innerHTML = makeGrid(unknown, "unknown");
+  document.getElementById("grid-mastered").innerHTML = makeGrid(mastered, "mastered");
+}
+
+async function toggleVocabChar(char, currentType) {
+  const newStatus = currentType==="mastered" ? "unknown" : "known";
+  activeChar = { char, el:null };
+  await markChar(newStatus);
+  renderVocab();
+}
+
+// ════════════════════════════════════════════
+// PROGRESS
+// ════════════════════════════════════════════
+function renderProgress() {
+  const mastered = Object.keys(ud.masteredChars||{}).length;
+  const unknown = Object.keys(ud.unknownChars||{}).length;
+  const p = PROFILES[currentUser];
+  const pct = Math.min(100, Math.round(mastered/p.vocabTarget*100));
+
+  document.getElementById("s-mastered").textContent = mastered;
+  document.getElementById("s-articles").textContent = ud.totalArticles||0;
+  document.getElementById("s-streak").textContent = ud.streak||0;
+  document.getElementById("s-unknown").textContent = unknown;
+  document.getElementById("prog-title").textContent = p.grade+"词汇掌握进度";
+  document.getElementById("prog-fill").style.width = pct+"%";
+  document.getElementById("prog-left").textContent = mastered+" 个已掌握";
+  document.getElementById("prog-right").textContent = "目标 "+p.vocabTarget+" 字（"+pct+"%）";
+
+  const hist = ud.articleHistory||[];
+  document.getElementById("history-list").innerHTML = hist.length===0
+    ? `<div style="text-align:center;color:#b0977a;padding:20px;font-size:13px">还没有阅读记录</div>`
+    : hist.map(h=>`
+      <div class="history-item">
+        <div><div class="history-name">${h.title}</div><div class="history-chars">约 ${h.charCount} 字</div></div>
+        <div class="history-date">${h.date}</div>
+      </div>`).join("");
+}
+
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+initLogin();
+</script>
+</body>
+</html>
