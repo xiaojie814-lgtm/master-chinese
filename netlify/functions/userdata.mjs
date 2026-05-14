@@ -1,3 +1,5 @@
+import { getDeployStore } from "@netlify/blobs";
+
 export default async (req, context) => {
   const headers = {
     "Content-Type": "application/json",
@@ -15,7 +17,7 @@ export default async (req, context) => {
     return new Response(JSON.stringify({ error: "invalid user" }), { status: 400, headers });
   }
 
-  const store = context.blobs;
+  const store = getDeployStore("reading-data");
 
   if (req.method === "GET") {
     try {
@@ -32,7 +34,7 @@ export default async (req, context) => {
       await store.setJSON(userId, body);
       return new Response(JSON.stringify({ ok: true }), { headers });
     } catch (e) {
-      return new Response(JSON.stringify({ error: e.message, stack: e.stack }), { status: 500, headers });
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers });
     }
   }
 
