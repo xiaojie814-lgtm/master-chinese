@@ -434,7 +434,7 @@ async function initLogin() {
     const data = await apiLoad(uid);
     const mastered = Object.keys(data.masteredChars||{}).length;
     const articles = data.totalArticles||0;
-    document.getElementById("stats-"+uid).innerHTML = `✅ ${mastered} 字 · 📖 ${articles} 篇`;
+    document.getElementById("stats-"+uid).innerHTML = `📖 ${articles} 篇文章`;
   }
 }
 
@@ -497,15 +497,15 @@ function renderArticle() {
   const savedArticle = ud.lastArticle;
   const fallbackArticle = ARTICLE && ARTICLE.user === currentUser ? ARTICLE : null;
   const activeArticle = savedArticle || fallbackArticle;
+  if (activeArticle) window._lastArticle = activeArticle;
 
   if (!activeArticle) {
     const p = PROFILES[currentUser];
     area.innerHTML = `
       <div class="empty-state fade-up">
         <div class="icon">📚</div>
-        <p>还没有新文章</p>
-        <div class="hint">让爸爸妈妈告诉Claude：<br>
-        <span class="hint-code">"给${p.name}生成一篇关于___的文章"</span></div>
+        <p>还没有文章</p>
+        <div class="hint">点击上方按钮生成一篇吧！</div>
       </div>`;
     return;
   }
@@ -536,13 +536,13 @@ function renderArticle() {
 
 async function markDone() {
   if (articleSaved) return;
-  const savedArticle = ud.lastArticle;
-  const fallbackArticle = ARTICLE && ARTICLE.user === currentUser ? ARTICLE : null;
-  const activeArticle = savedArticle || fallbackArticle;
+  const art = window._lastArticle;
+  if (!art || !art.body) return;
   ud.totalArticles = (ud.totalArticles||0)+1;
+  const cleanHistory = (ud.articleHistory||[]).filter(h => h.body && h.body.length > 0);
   ud.articleHistory = [
-    { title:activeArticle.title, date:new Date().toLocaleDateString("zh-CN"), charCount:activeArticle.body.length },
-    ...(ud.articleHistory||[])
+    { title: art.title, date: new Date().toLocaleDateString("zh-CN"), charCount: art.body.length, body: art.body },
+    ...cleanHistory
   ].slice(0,20);
   articleSaved = true;
   await apiSave(currentUser, ud);
