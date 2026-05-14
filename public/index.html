@@ -384,8 +384,13 @@ async function apiLoad(uid) {
   }
   try {
     const r = await fetch(`/api/userdata?uid=${uid}`);
-    if (r.ok) return await r.json();
-  } catch(e) {}
+    if (r.ok) {
+      const data = await r.json();
+      console.log("Loaded data for", uid, data);
+      return data;
+    }
+    console.warn("apiLoad failed:", r.status);
+  } catch(e) { console.error("apiLoad error:", e); }
   return {};
 }
 
@@ -395,13 +400,18 @@ async function apiSave(uid, data) {
     return;
   }
   try {
-    await fetch(`/api/userdata?uid=${uid}`, {
+    const r = await fetch(`/api/userdata?uid=${uid}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     });
-    showSaving();
-  } catch(e) {}
+    if (r.ok) {
+      console.log("Saved data for", uid);
+      showSaving();
+    } else {
+      console.warn("apiSave failed:", r.status, await r.text());
+    }
+  } catch(e) { console.error("apiSave error:", e); }
 }
 
 function showSaving() {
