@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>读书乐园 📚</title>
+<title>字在其中 📚</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -31,15 +31,7 @@ body {
 }
 .login-sub { color: #8b6f5e; font-size: 13px; letter-spacing: 3px; margin-bottom: 48px; }
 
-.new-article-banner {
-  background: rgba(192,57,43,0.08);
-  border: 1px dashed #c0392b;
-  border-radius: 12px;
-  padding: 10px 20px;
-  margin-bottom: 30px;
-  font-size: 13px; color: #c0392b; text-align: center;
-}
-.new-article-banner span { font-size: 11px; color: #8b6f5e; }
+
 
 .profile-cards { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
 
@@ -55,12 +47,7 @@ body {
 .profile-card:hover { transform: translateY(-7px); box-shadow: 0 14px 36px rgba(44,24,16,0.18); }
 .profile-card.kongkong:hover, .profile-card.kongkong.has-new { border-color: #c0392b; }
 .profile-card.miaomiao:hover, .profile-card.miaomiao.has-new { border-color: #1a7a6e; }
-.new-badge {
-  position: absolute; top: -10px; right: -10px;
-  background: #c0392b; color: white; border-radius: 999px;
-  width: 24px; height: 24px; font-size: 12px; font-weight: bold;
-  display: flex; align-items: center; justify-content: center;
-}
+
 .profile-avatar { font-size: 52px; margin-bottom: 10px; }
 .profile-name { font-size: 21px; font-weight: 700; color: #1a0a00; margin-bottom: 3px; }
 .profile-grade { font-size: 12px; color: #8b6f5e; margin-bottom: 12px; }
@@ -105,8 +92,9 @@ body {
 .article-legend { margin-top: 14px; padding-top: 12px; border-top: 1px dashed #f5ead0; font-size: 11px; color: #b0977a; display: flex; gap: 12px; flex-wrap: wrap; }
 
 .zh { display: inline-block; cursor: pointer; border-radius: 3px; padding: 0 1px; transition: background .1s; }
-.zh:hover { background: rgba(201,150,42,0.15); }
 .zh.unknown { border-bottom: 2px dotted #c0392b; color: #c0392b; }
+.zh:hover { background: rgba(201,150,42,0.15); }
+
 
 .btn-done { width: 100%; margin-top: 12px; padding: 11px; background: #1a7a6e; color: white; border: none; border-radius: 12px; font-size: 14px; cursor: pointer; letter-spacing: 1px; }
 .btn-done:hover { background: #156057; }
@@ -179,23 +167,20 @@ body {
 
 <!-- LOGIN -->
 <div id="login-screen">
-  <div class="login-title">读书乐园</div>
+  <div class="login-title">字在其中</div>
   <div class="login-sub">选择你的账户，开始阅读 ✨</div>
-  <div id="new-article-banner" style="display:none" class="new-article-banner">
-    📖 新文章已准备好：《<span id="banner-title"></span>》<br>
-    <span>给 <span id="banner-user"></span> 的</span>
-  </div>
+
   <div class="profile-cards">
     <div class="profile-card kongkong" id="card-kongkong" onclick="login('kongkong')">
-      <div class="profile-avatar">🌸</div>
+      <div class="profile-avatar">🐒</div>
       <div class="profile-name">空空</div>
-      <div class="profile-grade">马立平 · 四年级</div>
+      
       <div class="profile-stats" id="stats-kongkong">读取中…</div>
     </div>
     <div class="profile-card miaomiao" id="card-miaomiao" onclick="login('miaomiao')">
-      <div class="profile-avatar">🌟</div>
+      <div class="profile-avatar">🐱</div>
       <div class="profile-name">妙妙</div>
-      <div class="profile-grade">马立平 · 一年级</div>
+      
       <div class="profile-stats" id="stats-miaomiao">读取中…</div>
     </div>
   </div>
@@ -220,10 +205,35 @@ body {
     <button class="nav-tab active" data-tab="read" onclick="switchTab('read')">📖 阅读</button>
     <button class="nav-tab" data-tab="vocab" onclick="switchTab('vocab')">📝 生字本</button>
     <button class="nav-tab" data-tab="progress" onclick="switchTab('progress')">🌟 进步</button>
+    <button class="nav-tab" data-tab="history" onclick="switchTab('history')">📜 旧文章</button>
   </div>
   <div class="main">
     <!-- READ -->
     <div id="tab-read">
+      <div id="generate-controls" class="controls-card">
+        <div class="controls-row">
+          <div style="flex:1;min-width:120px">
+            <div class="ctrl-label">主题</div>
+            <select class="ctrl-select" id="topic-mode" onchange="toggleTopicInput()">
+              <option value="auto">🎲 AI随机话题</option>
+              <option value="manual">✏️ 我来指定</option>
+            </select>
+          </div>
+          <div style="flex:2;min-width:140px;display:none" id="topic-input-wrap">
+            <div class="ctrl-label">话题内容</div>
+            <input class="ctrl-input" id="topic-input" placeholder="比如：小猫的冒险…"/>
+          </div>
+          <div style="flex:1;min-width:100px">
+            <div class="ctrl-label">长度</div>
+            <select class="ctrl-select" id="art-len">
+              <option value="short">短文 ~80字</option>
+              <option value="medium" selected>中篇 ~180字</option>
+              <option value="long">长文 ~320字</option>
+            </select>
+          </div>
+          <button onclick="generateArticle()" id="gen-btn" style="padding:9px 20px;background:#c0392b;color:white;border:none;border-radius:12px;font-size:14px;cursor:pointer;white-space:nowrap;align-self:flex-end">✦ 生成文章</button>
+        </div>
+      </div>
       <div id="article-area"></div>
     </div>
     <!-- VOCAB -->
@@ -262,6 +272,10 @@ body {
         <div id="history-list"></div>
       </div>
     </div>
+    <!-- HISTORY -->
+    <div id="tab-history" style="display:none">
+      <div id="history-articles"></div>
+    </div>
   </div>
 </div>
 
@@ -270,6 +284,7 @@ body {
   <div class="tt-pinyin" id="tt-pinyin"></div>
   <div class="tt-char" id="tt-char"></div>
   <div class="tt-status" id="tt-status"></div>
+  
   <div class="tt-btns">
     <button class="tt-btn tt-know" onclick="markChar('known')">✓ 认识</button>
     <button class="tt-btn tt-unknown" onclick="markChar('unknown')">✗ 不认识</button>
@@ -282,18 +297,14 @@ body {
 // ════════════════════════════════════════════
 // 文章配置 —— 只需改这里！
 // ════════════════════════════════════════════
-const ARTICLE = {
-  user: "kongkong",
-  title: "海豚的秘密",
-  body: "海豚是一种聪明又可爱的动物，它们生活在大海里，喜欢成群结队地游来游去。\n\n海豚用肺呼吸，不是用鱼鳃。它们每隔一段时间就要游到水面上，大口吸一口新鲜空气。\n\n最有趣的是，海豚会用声音说话。它们发出各种各样的叫声，告诉同伴附近有没有食物，或者有没有危险。科学家发现，每只海豚都有自己专属的叫声，就像人的名字一样。\n\n海豚还很喜欢跳跃。在大海里，它们常常高高跳出水面，又重重落下，溅起白色的浪花。看到这样的画面，谁都会忍不住微笑。"
-};
+const ARTICLE = null;
 
 // ════════════════════════════════════════════
 // 用户配置
 // ════════════════════════════════════════════
 const PROFILES = {
-  kongkong: { name:"空空", avatar:"🌸", grade:"四年级", color:"#c0392b", vocabTarget:600 },
-  miaomiao: { name:"妙妙", avatar:"🌟", grade:"一年级", color:"#1a7a6e", vocabTarget:150 }
+  kongkong: { name:"空空", avatar:"🐒", grade:"四年级", color:"#c0392b", vocabTarget:600 },
+  miaomiao: { name:"妙妙", avatar:"🐱", grade:"初学者", color:"#1a7a6e", vocabTarget:50 }
 };
 
 // ════════════════════════════════════════════
@@ -364,7 +375,13 @@ let articleSaved = false;
 // ════════════════════════════════════════════
 // API
 // ════════════════════════════════════════════
+const IS_LOCAL = location.protocol === "file:";
+
 async function apiLoad(uid) {
+  if (IS_LOCAL) {
+    try { return JSON.parse(localStorage.getItem("ud_"+uid)||"{}"); } catch(e) {}
+    return {};
+  }
   try {
     const r = await fetch(`/api/userdata?uid=${uid}`);
     if (r.ok) return await r.json();
@@ -373,6 +390,10 @@ async function apiLoad(uid) {
 }
 
 async function apiSave(uid, data) {
+  if (IS_LOCAL) {
+    try { localStorage.setItem("ud_"+uid, JSON.stringify(data)); showSaving(); } catch(e) {}
+    return;
+  }
   try {
     await fetch(`/api/userdata?uid=${uid}`, {
       method: "POST",
@@ -397,18 +418,7 @@ function emptyUD() {
 // LOGIN
 // ════════════════════════════════════════════
 async function initLogin() {
-  // Show new article banner
-  if (ARTICLE) {
-    const p = PROFILES[ARTICLE.user];
-    document.getElementById("new-article-banner").style.display = "block";
-    document.getElementById("banner-title").textContent = ARTICLE.title;
-    document.getElementById("banner-user").textContent = p?.name || "";
-    const card = document.getElementById("card-" + ARTICLE.user);
-    if (card) card.classList.add("has-new");
-    const badge = document.createElement("div");
-    badge.className = "new-badge"; badge.textContent = "新";
-    if (card && !card.querySelector(".new-badge")) card.appendChild(badge);
-  }
+
   // Load stats
   for (const uid of ["kongkong","miaomiao"]) {
     const data = await apiLoad(uid);
@@ -437,7 +447,7 @@ async function login(userId) {
   document.getElementById("h-avatar").textContent = p.avatar;
   document.getElementById("h-name").style.color = p.color;
   document.getElementById("h-name").textContent = p.name;
-  document.getElementById("h-grade").textContent = "马立平 · " + p.grade;
+  
   document.getElementById("h-streak").textContent = ud.streak||0;
 
   document.getElementById("login-screen").style.display = "none";
@@ -459,11 +469,13 @@ function logout() {
 function switchTab(tab) {
   document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
   document.querySelector(`[data-tab="${tab}"]`).classList.add("active");
-  ["read","vocab","progress"].forEach(t => {
+  ["read","vocab","progress","history"].forEach(t => {
     document.getElementById("tab-"+t).style.display = t===tab ? "block" : "none";
   });
+  if (tab==="read") renderArticle();
   if (tab==="vocab") renderVocab();
   if (tab==="progress") renderProgress();
+  if (tab==="history") renderHistory();
 }
 
 // ════════════════════════════════════════════
@@ -471,9 +483,12 @@ function switchTab(tab) {
 // ════════════════════════════════════════════
 function renderArticle() {
   const area = document.getElementById("article-area");
-  const showArticle = ARTICLE && ARTICLE.user === currentUser;
+  // Use last generated article if available, otherwise use hardcoded ARTICLE
+  const savedArticle = ud.lastArticle;
+  const fallbackArticle = ARTICLE && ARTICLE.user === currentUser ? ARTICLE : null;
+  const activeArticle = savedArticle || fallbackArticle;
 
-  if (!showArticle) {
+  if (!activeArticle) {
     const p = PROFILES[currentUser];
     area.innerHTML = `
       <div class="empty-state fade-up">
@@ -487,7 +502,7 @@ function renderArticle() {
 
   const isCN = c => /[\u4e00-\u9fff]/.test(c);
   let bodyHTML = "";
-  for (const char of ARTICLE.body) {
+  for (const char of activeArticle.body) {
     if (!isCN(char)) {
       bodyHTML += char==="\n" ? "<br>" : char;
       continue;
@@ -498,11 +513,11 @@ function renderArticle() {
 
   area.innerHTML = `
     <div class="article-card fade-up">
-      <div class="article-title">${ARTICLE.title}</div>
+      <div class="article-title">${activeArticle.title}</div>
       <div class="article-body">${bodyHTML}</div>
       <div class="article-legend">
-        <span>🔴 红色点线 = 不认识的字</span>
-        <span style="margin-left:auto">点击汉字看拼音</span>
+        <span>点击汉字看拼音</span>
+        
       </div>
     </div>
     ${!articleSaved ? `<button class="btn-done" onclick="markDone()">✓ 我读完了，保存记录</button>` : `<div class="done-msg">✅ 已保存到阅读记录！</div>`}
@@ -511,9 +526,12 @@ function renderArticle() {
 
 async function markDone() {
   if (articleSaved) return;
+  const savedArticle = ud.lastArticle;
+  const fallbackArticle = ARTICLE && ARTICLE.user === currentUser ? ARTICLE : null;
+  const activeArticle = savedArticle || fallbackArticle;
   ud.totalArticles = (ud.totalArticles||0)+1;
   ud.articleHistory = [
-    { title:ARTICLE.title, date:new Date().toLocaleDateString("zh-CN"), charCount:ARTICLE.body.length },
+    { title:activeArticle.title, date:new Date().toLocaleDateString("zh-CN"), charCount:activeArticle.body.length },
     ...(ud.articleHistory||[])
   ].slice(0,20);
   articleSaved = true;
@@ -524,9 +542,35 @@ async function markDone() {
 // ════════════════════════════════════════════
 // TOOLTIP
 // ════════════════════════════════════════════
-function charClick(el, char) {
+async function charClick(el, char) {
   activeChar = { char, el };
-  const pinyin = PINYIN[char] || "···";
+  let pinyin = PINYIN[char];
+
+  // If pinyin missing, ask Claude for it
+  if (!pinyin) {
+    document.getElementById("tt-pinyin").textContent = "…";
+    document.getElementById("tt-char").textContent = char;
+    document.getElementById("tt-status").textContent = "";
+    const tt = document.getElementById("tooltip");
+    tt.style.display = "block";
+    const rect = el.getBoundingClientRect();
+    const top = Math.max(10, rect.top - 130);
+    const left = Math.min(window.innerWidth-165, Math.max(10, rect.left-55));
+    tt.style.top = top+"px"; tt.style.left = left+"px";
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: `汉字"${char}"的拼音是什么？只返回拼音，不要其他内容。`, max_tokens: 50 })
+      });
+      const data = await res.json();
+      pinyin = data.text?.trim() || "···";
+      PINYIN[char] = pinyin;
+    } catch(e) {
+      pinyin = "···";
+    }
+  }
+
   const isU = !!ud.unknownChars?.[char];
   document.getElementById("tt-pinyin").textContent = pinyin;
   document.getElementById("tt-char").textContent = char;
@@ -549,11 +593,11 @@ async function markChar(status) {
   if (status==="known") {
     ud.masteredChars[char] = { pinyin, masteredDate:now };
     delete ud.unknownChars[char];
-    if (activeChar.el) activeChar.el.classList.remove("unknown");
+    document.querySelectorAll(".zh").forEach(el => { if (el.textContent===char) el.classList.remove("unknown"); });
   } else {
     ud.unknownChars[char] = { pinyin, firstSeen:ud.unknownChars[char]?.firstSeen||now, seenCount:(ud.unknownChars[char]?.seenCount||0)+1 };
     delete ud.masteredChars[char];
-    if (activeChar.el) activeChar.el.classList.add("unknown");
+    document.querySelectorAll(".zh").forEach(el => { if (el.textContent===char) el.classList.add("unknown"); });
   }
   hideTooltip();
   await apiSave(currentUser, ud);
@@ -629,6 +673,165 @@ function renderProgress() {
         <div><div class="history-name">${h.title}</div><div class="history-chars">约 ${h.charCount} 字</div></div>
         <div class="history-date">${h.date}</div>
       </div>`).join("");
+}
+
+// ════════════════════════════════════════════
+// HISTORY
+// ════════════════════════════════════════════
+function renderHistory() {
+  const hist = (ud.articleHistory || []).filter(h => h.body && h.body.length > 0);
+  const area = document.getElementById("history-articles");
+  if (!hist.length) {
+    area.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>还没有阅读记录</p></div>`;
+    return;
+  }
+  area.innerHTML = hist.map((h, i) => `
+    <div class="article-card fade-up" style="margin-bottom:16px;cursor:pointer" onclick="loadHistoryArticle(${i})">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:18px;color:#c0392b;font-weight:700;letter-spacing:2px">${h.title}</div>
+        <div style="font-size:12px;color:#8b6f5e">${h.date}</div>
+      </div>
+      <div style="font-size:12px;color:#1a7a6e;margin-top:4px">约 ${h.charCount} 字</div>
+    </div>`).join("");
+}
+
+function loadHistoryArticle(idx) {
+  const h = (ud.articleHistory || [])[idx];
+  if (!h) return;
+  switchTab("read");
+  if (h.body) {
+    renderGeneratedArticle(h.title, h.body);
+  } else {
+    // old records without body - just show title
+    document.getElementById("article-area").innerHTML = `
+      <div class="article-card"><div class="article-title">${h.title}</div>
+      <div style="text-align:center;color:#b0977a;padding:20px;font-size:13px">这篇文章内容没有保存，请重新生成</div></div>`;
+  }
+}
+
+// ════════════════════════════════════════════
+// GENERATE ARTICLE
+// ════════════════════════════════════════════
+// API calls go through backend /api/generate
+
+function toggleTopicInput() {
+  const mode = document.getElementById("topic-mode").value;
+  document.getElementById("topic-input-wrap").style.display = mode === "manual" ? "block" : "none";
+}
+
+async function generateArticle() {
+  if (!currentUser) return;
+  const btn = document.getElementById("gen-btn");
+  btn.disabled = true;
+  btn.textContent = "✦ 写作中…";
+
+  const profile = PROFILES[currentUser];
+  const mode = document.getElementById("topic-mode").value;
+  const topic = document.getElementById("topic-input").value.trim();
+  const len = document.getElementById("art-len").value;
+  const lenMap = { short:"约80字", medium:"约180字", long:"约320字" };
+  const allUnknown = Object.keys(ud.unknownChars||{});
+  const shuffled = allUnknown.sort(()=>Math.random()-0.5);
+  const unknownList = shuffled.slice(0, Math.min(5, shuffled.length)).join("、");
+  const topicLine = mode==="manual" && topic
+    ? "话题："+topic
+    : "自选有趣贴近儿童生活的话题（动物冒险、季节、友情、魔法、美食，每次不同）";
+
+  const masteredList = Object.keys(ud.masteredChars||{}).slice(0,50).join("");
+  const isBeginner = profile.grade === "初学者";
+
+  const SIYUKUAIDU_CORE = "一二三四五六七八九十上下大小多少人口手足目耳山水火土日月星爸妈哥姐弟妹猫狗鱼鸟红黄蓝绿来去吃喝玩看好不是有";
+
+  const prompt = isBeginner
+    ? `你是专业儿童中文老师，给刚开始学中文的5岁孩子写一篇极简短文，基于《四五快读》第一册水平。
+要求：
+1. ${topicLine}
+2. 长度：最多50个字，句子极短（每句2-5个字）
+3. 只使用以下基础字：${SIYUKUAIDU_CORE}
+4. 如果有这些生字请自然重复：${unknownList||"无"}
+5. 句子要像儿歌一样朗朗上口
+6. 第一行是标题（2-4个字），空一行后写正文
+直接输出标题和正文，不要任何格式标记或说明。标题要有创意，每次都不同。`
+    : `你是专业儿童中文老师，给${profile.grade}孩子写一篇短文。
+要求：
+1. ${topicLine}
+2. 长度：${lenMap[len]}
+3. 用词适合${profile.grade}水平，句子简单有趣
+4. 70%用孩子熟悉的字：${masteredList||"最基础常见的字"}；随机融入1-3个生字：${unknownList||"无"}；自然引入1-2个新词
+5. 有趣味性，有画面感，每次话题和风格都新鲜
+6. 第一行是标题（4-6字），空一行后写正文
+直接输出标题和正文，不要任何格式标记或说明。标题要有创意，每次都不同。`;
+
+  document.getElementById("article-area").innerHTML = `
+    <div style="text-align:center;padding:60px 20px;color:#8b6f5e">
+      <div style="font-size:40px;margin-bottom:12px;display:inline-block;animation:spin 1.5s linear infinite">🖌️</div>
+      <div style="font-size:16px;letter-spacing:2px">正在为你写一篇专属文章…</div>
+      <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+    </div>`;
+
+  try {
+    const res = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt })
+    });
+    const data = await res.json();
+    const text = data.text || "";
+
+    const lines = text.trim().split("\n").filter(l => l.trim());
+    const title = lines[0] || "有趣的故事";
+    const body = lines.slice(1).join("\n").trim() || text;
+    if (!body) body = text;
+
+
+    window.CURRENT_GENERATED = { user: currentUser, title, body };
+    ud.lastArticle = { title, body };
+    await apiSave(currentUser, ud);
+    renderGeneratedArticle(title, body);
+
+  } catch(e) {
+    document.getElementById("article-area").innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>生成失败，请再试</p></div>`;
+  }
+
+  btn.disabled = false;
+  btn.textContent = "✦ 生成文章";
+}
+
+function renderGeneratedArticle(title, body) {
+  articleSaved = false;
+  window._lastArticle = { title, body };
+  const isCN = c => /[\u4e00-\u9fff]/.test(c);
+  let bodyHTML = "";
+  for (const char of body) {
+    if (!isCN(char)) { bodyHTML += char==="\n" ? "<br>" : char; continue; }
+    bodyHTML += `<span class="zh" onclick="charClick(this,'${char}')">${char}</span>`;
+  }
+  document.getElementById("article-area").innerHTML = `
+    <div class="article-card fade-up">
+      <div class="article-title">${title}</div>
+      <div class="article-body">${bodyHTML}</div>
+      <div class="article-legend">
+        <span>点击汉字看拼音</span>
+        
+      </div>
+    </div>
+    <button class="btn-done" onclick="saveDoneGenerated()">✓ 我读完了，保存记录</button>`;
+}
+
+async function saveDoneGenerated() {
+  if (articleSaved) return;
+  const art = window._lastArticle;
+  if (!art || !art.body) return;
+  ud.totalArticles = (ud.totalArticles||0)+1;
+  // Filter out old articles without body content
+  const cleanHistory = (ud.articleHistory||[]).filter(h => h.body && h.body.length > 0);
+  ud.articleHistory = [
+    { title: art.title, date: new Date().toLocaleDateString("zh-CN"), charCount: art.body.length, body: art.body },
+    ...cleanHistory
+  ].slice(0,20);
+  articleSaved = true;
+  await apiSave(currentUser, ud);
+  document.querySelector(".btn-done").outerHTML = `<div class="done-msg">✅ 已保存到阅读记录！</div>`;
 }
 
 // ════════════════════════════════════════════
